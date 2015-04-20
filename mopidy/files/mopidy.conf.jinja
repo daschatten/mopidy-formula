@@ -1,0 +1,57 @@
+{%- set config = salt['pillar.get']('mopidy:config', {}) %}
+{%- set ext = salt['pillar.get']('mopidy:extensions', {}) %}
+
+{%- set defaults = {
+    'logging': {
+      'config_file': "/etc/mopidy/logging.conf",
+      'debug_file': "/var/log/mopidy/mopidy-debug.log"
+    },
+    'local': {
+      'enabled': "true",
+      'data_dir': "/var/lib/mopidy/local",
+      'media_dir': "/var/lib/mopidy/media",
+      'playlists_dir': "/var/lib/mopidy/playlists"
+    },
+    'mpd': {
+      'enabled': "true",
+      'hostname': "::",
+      'port': 6600,
+      'password': "mypassword",
+      'max_connections': 20,
+      'connection_timeout': 60,
+      'command_blacklist': "listall,listallinfo"
+    },
+    'http': {
+      'enabled': "true",
+      'hostname': "::",
+      'port': 6680
+    }
+} %}
+
+{%- if 'tunein' in ext %}
+{%- do defaults.update({'tunein': {
+      'enabled': "true",
+      'timeout': 5000
+}}) %}
+{%- endif %}
+
+{#- merge defaults in config #}
+{%- for dkey, dvalue in defaults.iteritems() %}
+{%-   if not dkey in config %}
+{%- do config.update({dkey: dvalue}) %}
+{%-   else %}
+{%-     for dsubkey, dsubvalue in dvalue.iteritems() %}
+{%-       if not dsubkey in config[dkey] %}
+{%-         do config[dkey].update({dsubkey: dsubvalue}) %}
+{%-       endif %}
+{%-     endfor %}
+{%-   endif %}
+{%- endfor %}
+
+
+{%- for name, data in config.iteritems() %}
+[{{ name }}]
+{%-   for key, value in data.iteritems() %}
+{{ key }} = {{ value }}
+{%-   endfor %}
+{% endfor %}

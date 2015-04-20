@@ -1,0 +1,13 @@
+{% set map = salt['grains.filter_by']({
+    'Debian': {
+        'pkgs_base': ['mopidy', 'python-pip'],
+        'service': 'mopidy',
+        'conf_dir': '/etc/mopidy',
+        'conf_file': 'mopidy.conf',
+        'repo_humanname': 'Mopidy',
+        'repo_name': 'deb http://apt.mopidy.com/ stable main contrib non-free',
+        'repo_file': '/etc/apt/sources.list.d/mopidy.list',
+        'repo_keyurl': 'http://apt.mopidy.com/mopidy.gpg',
+    },
+
+}, grain='os', merge=salt['pillar.get']('mopidy:lookup')) %}
